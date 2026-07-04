@@ -54,7 +54,7 @@ export default function Play() {
                 return (
                   <div key={f.id} className="flex flex-col sm:flex-row sm:items-center justify-between bg-slate-800 p-3 rounded-lg border border-slate-700 gap-2">
                     <div className="flex items-center gap-3">
-                      <Badge variant="outline" className="w-16 justify-center bg-slate-900">{f.stage}</Badge>
+                      <Badge variant="outline" className="w-16 justify-center bg-slate-900 text-slate-300 border-slate-700">{f.stage}</Badge>
                       <span className="font-medium text-slate-400">vs</span>
                       <span className="font-bold flex items-center gap-2">
                         <span>{opp?.flag}</span> {opp?.name}
