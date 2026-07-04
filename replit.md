@@ -1,6 +1,6 @@
-# [Project name]
+# Cricket Champions
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A cricket tournament simulator — pick a tournament (World Cup, T20 World Cup, Asia Cup, BPL, IPL, PSL, LPL), pick an overs format (2 to 50 overs), and play through group/league stages and knockouts to crown a champion.
 
 ## Run & Operate
 
@@ -22,15 +22,25 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/cricket-champions/src/lib/types.ts` — core domain types (Team, TournamentConfig, Fixture, StandingRow, MatchResult, Innings, OverOption)
+- `artifacts/cricket-champions/src/lib/teams.ts` — all team rosters (international + BPL/IPL/PSL/LPL franchises)
+- `artifacts/cricket-champions/src/lib/tournaments.ts` — the 7 tournament configs (World Cup, T20 World Cup, Asia Cup, BPL, IPL, PSL, LPL)
+- `artifacts/cricket-champions/src/lib/matchSimulator.ts` — ball-by-ball match simulation engine
+- `artifacts/cricket-champions/src/lib/tournamentEngine.ts` — fixture generation, standings, and stage advancement (group→knockout, league→playoffs)
+- `artifacts/cricket-champions/src/hooks/useTournament.ts` — React hook/context wrapping the engine with localStorage persistence
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- This is a fully client-side app — no backend/database. Tournament progress persists to localStorage only (single active tournament at a time).
+- Game rules/simulation logic live in `src/lib` and are owned by the main agent; the design subagent only builds UI that consumes the `useTournament` hook.
+- Two tournament formats: `group-knockout` (World Cup, T20 WC, Asia Cup — groups feed into QF/SF/Final) and `league-playoff` (BPL/IPL/PSL/LPL — round robin feeds into Qualifier1/Eliminator/Qualifier2/Final).
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+- Pick one of 7 tournaments and an overs format (2/3/5/10/20/50 overs per innings)
+- Play through group or league stage fixtures one at a time (or simulate all remaining at once)
+- Standings tables update live; stage automatically advances to knockouts/playoffs once the prior stage completes
+- Championship reveal screen once a champion is crowned, with option to start a new tournament
 
 ## User preferences
 
@@ -38,7 +48,7 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- After editing `src/lib/tournaments.ts` or `src/lib/teams.ts`, no codegen step is needed — this app has no OpenAPI/backend.
 
 ## Pointers
 

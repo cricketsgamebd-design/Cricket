@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Cricket Champions"
+version = "1.0.0"
+id = "artifacts/cricket-champions"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19307
+
+[services.development]
+run = "pnpm --filter @workspace/cricket-champions run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/cricket-champions", "run", "build" ]
+publicDir = "artifacts/cricket-champions/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19307"
+BASE_PATH = "/"
