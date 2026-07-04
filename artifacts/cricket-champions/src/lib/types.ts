@@ -30,6 +30,28 @@ export interface TournamentConfig {
   description: string;
 }
 
+export type BowlingStyle =
+  | "fast"
+  | "fast-medium"
+  | "medium-fast"
+  | "medium"
+  | "off-spin"
+  | "leg-spin"
+  | "left-arm-orthodox"
+  | "left-arm-wrist-spin";
+
+export type ShotType =
+  | "drive"
+  | "pull"
+  | "cut"
+  | "flick"
+  | "loft"
+  | "defend"
+  | "leave"
+  | "edge"
+  | "miss"
+  | "big-hit";
+
 export interface Innings {
   battingTeamId: string;
   bowlingTeamId: string;
@@ -51,6 +73,9 @@ export interface BallEvent {
   isSix: boolean;
   isExtra: boolean;
   label: string;
+  bowlingStyle: BowlingStyle;
+  speedKph: number;
+  shotType: ShotType;
 }
 
 export interface MatchResult {

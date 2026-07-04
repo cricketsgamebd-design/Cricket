@@ -1,7 +1,59 @@
-import type { BallEvent, Innings, MatchResult, OverOption, Team } from "./types";
+import type { BallEvent, BowlingStyle, Innings, MatchResult, OverOption, ShotType, Team } from "./types";
 
 function rand(): number {
   return Math.random();
+}
+
+const SPEED_RANGES: Record<BowlingStyle, [number, number]> = {
+  fast: [140, 156],
+  "fast-medium": [130, 145],
+  "medium-fast": [120, 135],
+  medium: [108, 124],
+  "off-spin": [82, 92],
+  "leg-spin": [80, 90],
+  "left-arm-orthodox": [80, 90],
+  "left-arm-wrist-spin": [82, 92],
+};
+
+const PACE_STYLES: BowlingStyle[] = ["fast", "fast-medium", "medium-fast", "medium"];
+const SPIN_STYLES: BowlingStyle[] = ["off-spin", "leg-spin", "left-arm-orthodox", "left-arm-wrist-spin"];
+
+function buildBowlingPlan(totalOvers: number): BowlingStyle[] {
+  const plan: BowlingStyle[] = [];
+  for (let over = 0; over < totalOvers; over++) {
+    const progress = over / Math.max(totalOvers, 1);
+    let usesPace: boolean;
+    if (totalOvers <= 4) {
+      usesPace = rand() < 0.75;
+    } else if (progress < 0.25 || progress > 0.85) {
+      usesPace = rand() < 0.8;
+    } else {
+      usesPace = rand() < 0.4;
+    }
+    const pool = usesPace ? PACE_STYLES : SPIN_STYLES;
+    plan.push(pool[Math.floor(rand() * pool.length)]);
+  }
+  return plan;
+}
+
+function speedForStyle(style: BowlingStyle): number {
+  const [min, max] = SPEED_RANGES[style];
+  return Math.round(min + rand() * (max - min));
+}
+
+function pickShotType(outcome: { runs: number; isWicket: boolean; isExtra: boolean }, isPace: boolean): ShotType {
+  if (outcome.isWicket) {
+    const wicketShots: ShotType[] = ["edge", "miss", "big-hit", "drive"];
+    return wicketShots[Math.floor(rand() * wicketShots.length)];
+  }
+  if (outcome.runs === 6) return "big-hit";
+  if (outcome.runs === 4) return rand() < 0.5 ? "drive" : isPace ? "pull" : "loft";
+  if (outcome.runs === 0) {
+    const dotShots: ShotType[] = ["defend", "leave", "miss"];
+    return dotShots[Math.floor(rand() * dotShots.length)];
+  }
+  const runShots: ShotType[] = ["drive", "flick", "cut", "pull"];
+  return runShots[Math.floor(rand() * runShots.length)];
 }
 
 function weightedOutcome(battingStrength: number, bowlingStrength: number): {
@@ -63,6 +115,7 @@ function simulateInnings(
 
   const battingStrength = battingTeam.batting;
   const bowlingStrength = bowlingTeam.bowling;
+  const bowlingPlan = buildBowlingPlan(oversLimit);
 
   for (let i = 0; i < totalBalls; i++) {
     if (wickets >= maxWickets) break;
@@ -70,6 +123,8 @@ function simulateInnings(
 
     const over = Math.floor(i / 6);
     const ball = (i % 6) + 1;
+    const bowlingStyle = bowlingPlan[over] ?? "medium";
+    const isPace = PACE_STYLES.includes(bowlingStyle);
 
     const progress = i / totalBalls;
     const pushFactor = target !== undefined ? clamp((target - runs) / Math.max(totalBalls - i, 1) - 1, -1, 3) * 3 : 0;
@@ -98,6 +153,9 @@ function simulateInnings(
       isSix: outcome.runs === 6,
       isExtra: outcome.isExtra,
       label,
+      bowlingStyle,
+      speedKph: speedForStyle(bowlingStyle),
+      shotType: pickShotType(outcome, isPace),
     });
 
     if (target !== undefined && runs > target) break;
