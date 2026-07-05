@@ -5,12 +5,16 @@ import { getTeam } from "@/lib/teams";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, FastForward, Play as PlayIcon, AlertCircle, RotateCcw } from "lucide-react";
+import { Trophy, FastForward, Play as PlayIcon, AlertCircle, RotateCcw, Clapperboard } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { Fixture } from "@/lib/types";
+import MatchPlayback3D from "@/components/cricket3d/MatchPlayback3D";
 
 export default function Play() {
   const [, setLocation] = useLocation();
   const { state, config, isComplete, nextFixture, simulateNext, simulateAllRemaining, resetTournament, simulateFixture } = useTournament();
+  const [watchFixture, setWatchFixture] = useState<Fixture | null>(null);
+  const [watchInningsIndex, setWatchInningsIndex] = useState<0 | 1>(0);
 
   if (!state || !config) {
     return (
@@ -159,9 +163,18 @@ export default function Play() {
                                 <span className="font-bold text-slate-900">{fixture.result.secondInnings.runs}/{fixture.result.secondInnings.wickets}</span>
                               </div>
                             </div>
-                            <div className="text-xs font-bold text-primary px-2 py-1 bg-primary/10 rounded">
+                            <div className="text-xs font-bold text-primary px-2 py-1 bg-primary/10 rounded mb-2">
                               {fixture.result.resultText}
                             </div>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="w-full font-bold"
+                              onClick={() => setWatchFixture(fixture)}
+                            >
+                              <Clapperboard className="w-4 h-4 mr-2" />
+                              Watch 3D
+                            </Button>
                           </div>
                         ) : (
                           <Button 
@@ -196,6 +209,34 @@ export default function Play() {
           </div>
         </div>
       </main>
+
+      {watchFixture?.result && (
+        <MatchPlayback3D
+          innings={watchInningsIndex === 0 ? watchFixture.result.firstInnings : watchFixture.result.secondInnings}
+          battingTeam={
+            getTeam(
+              watchInningsIndex === 0
+                ? watchFixture.result.firstInnings.battingTeamId
+                : watchFixture.result.secondInnings.battingTeamId,
+            )!
+          }
+          bowlingTeam={
+            getTeam(
+              watchInningsIndex === 0
+                ? watchFixture.result.firstInnings.bowlingTeamId
+                : watchFixture.result.secondInnings.bowlingTeamId,
+            )!
+          }
+          onClose={() => {
+            if (watchInningsIndex === 0) {
+              setWatchInningsIndex(1);
+            } else {
+              setWatchFixture(null);
+              setWatchInningsIndex(0);
+            }
+          }}
+        />
+      )}
     </div>
   );
 }
